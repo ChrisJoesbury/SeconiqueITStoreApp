@@ -7,8 +7,6 @@
 
 Seconique IT Store is a stockroom web application for **recording, issuing, and reporting IT assets and consumables**. Staff receive goods into shared bin locations, issue them to named people, and see what is held, where it sits, and when it needs reordering.
 
-Built for the BSc Digital and Technology Solutions assessment in Software Engineering and DevOps (QA / University of Roehampton).
-
 ---
 
 ## 🚀 Overview
