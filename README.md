@@ -69,8 +69,8 @@ Key capabilities include:
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/ChrisJoesbury/SeconiqueITStore.git
-cd SeconiqueITStore
+git clone https://github.com/ChrisJoesbury/SeconiqueITStoreApp.git
+cd SeconiqueITStoreApp
 ```
 
 ### 2. Create and activate a virtual environment
