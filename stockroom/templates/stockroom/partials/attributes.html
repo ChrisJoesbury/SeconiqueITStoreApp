@@ -1,0 +1,9 @@
+{% if attributes %}
+  <span class="attr-list">
+    {% for attr in attributes %}
+      <a class="pill" href="{% url 'attribute_report' %}?attribute={{ attr|urlencode }}">{{ attr }}</a>
+    {% endfor %}
+  </span>
+{% else %}
+  —
+{% endif %}

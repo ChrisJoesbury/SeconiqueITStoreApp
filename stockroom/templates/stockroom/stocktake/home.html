@@ -1,0 +1,21 @@
+{% extends "stockroom/base.html" %}
+{% block title %}Stocktake{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div>
+    <p class="eyebrow">Stocktake</p>
+    <h1>Count the store</h1>
+    <p class="lede">Scan each asset that should be on the shelf, or enter a counted quantity for consumables.</p>
+  </div>
+</header>
+<div class="choices">
+  <a class="choice" href="{% url 'stocktake_assets' %}">
+    <h2>Assets</h2>
+    <p>Scan in-stock assets. Anything not scanned is marked missing. Issued items are left out.</p>
+  </a>
+  <a class="choice" href="{% url 'stocktake_consumables' %}">
+    <h2>Consumables</h2>
+    <p>Enter the counted quantity. The change is stored in the usage log.</p>
+  </a>
+</div>
+{% endblock %}

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}IT Store{% endblock %} · Seconique</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'stockroom/css/app.css' %}?v=14">
+</head>
+<body class="{% block body_class %}{% endblock %}" data-scanner-submit="{{ scanner_auto_submit|yesno:'true,false' }}">
+  {% block nav %}
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="{% url 'home' %}">
+        <img src="{% static 'stockroom/img/seconique-logo-white.png' %}?v=2" alt="Seconique Furniture">
+        <small>IT Store</small>
+      </a>
+      <nav class="nav" aria-label="Primary">
+        {% if is_operational %}
+          <a href="{% url 'dashboard' %}" aria-label="Dashboard" {% if request.resolver_match.url_name == 'dashboard' %}aria-current="page"{% endif %}>{% include "stockroom/partials/icon.html" with icon="dashboard" %}<span class="nav-tip">Dashboard</span></a>
+          <a href="{% url 'asset_list' %}" aria-label="Assets" {% if 'asset' in request.resolver_match.url_name %}aria-current="page"{% endif %}>{% include "stockroom/partials/icon.html" with icon="assets" %}<span class="nav-tip">Assets</span></a>
+          <a href="{% url 'consumable_list' %}" aria-label="Consumables" {% if 'consumable' in request.resolver_match.url_name %}aria-current="page"{% endif %}>{% include "stockroom/partials/icon.html" with icon="consumables" %}<span class="nav-tip">Consumables</span></a>
+          <a href="{% url 'goods_in' %}" aria-label="Goods in" {% if 'goods_in' in request.resolver_match.url_name %}aria-current="page"{% endif %}>{% include "stockroom/partials/icon.html" with icon="goods-in" %}<span class="nav-tip">Goods in</span></a>
+          <a href="{% url 'goods_out' %}" aria-label="Goods out" {% if 'goods_out' in request.resolver_match.url_name %}aria-current="page"{% endif %}>{% include "stockroom/partials/icon.html" with icon="goods-out" %}<span class="nav-tip">Goods out</span></a>
+          <a href="{% url 'stocktake_home' %}" aria-label="Stocktake" {% if 'stocktake' in request.resolver_match.url_name %}aria-current="page"{% endif %}>{% include "stockroom/partials/icon.html" with icon="stocktake" %}<span class="nav-tip">Stocktake</span></a>
+        {% endif %}
+        {% if can_report %}
+          <a href="{% url 'analytics' %}" aria-label="Analytics" {% if request.resolver_match.url_name == 'analytics' %}aria-current="page"{% endif %}>{% include "stockroom/partials/icon.html" with icon="analytics" %}<span class="nav-tip">Analytics</span></a>
+        {% endif %}
+        {% if is_operational or can_report %}
+          <a href="{% url 'store_contents' %}" aria-label="Store list" {% if request.resolver_match.url_name == 'store_contents' %}aria-current="page"{% endif %}>{% include "stockroom/partials/icon.html" with icon="contents" %}<span class="nav-tip">Store list</span></a>
+          <a href="{% url 'attribute_report' %}" aria-label="Attributes" {% if request.resolver_match.url_name == 'attribute_report' %}aria-current="page"{% endif %}>{% include "stockroom/partials/icon.html" with icon="attributes" %}<span class="nav-tip">Attributes</span></a>
+          {% if is_store_admin %}
+            <a href="{% url 'bin_location_list' %}" aria-label="Bin locations" {% if 'bin_location' in request.resolver_match.url_name %}aria-current="page"{% endif %}>{% include "stockroom/partials/icon.html" with icon="bins" %}<span class="nav-tip">Bin locations</span></a>
+          {% endif %}
+          <a href="{% url 'usage_list' %}" aria-label="Usage" {% if request.resolver_match.url_name == 'usage_list' %}aria-current="page"{% endif %}>{% include "stockroom/partials/icon.html" with icon="usage" %}<span class="nav-tip">Usage</span></a>
+        {% endif %}
+      </nav>
+      <div class="account">
+        {% if store_role %}<span class="role">{{ store_role }}</span>{% endif %}
+        {% if is_store_admin %}
+          <a class="icon-btn" href="{% url 'user_list' %}" aria-label="Users" {% if request.resolver_match.url_name == 'user_list' or request.resolver_match.url_name == 'user_create' or request.resolver_match.url_name == 'user_edit' %}aria-current="page"{% endif %}>{% include "stockroom/partials/icon.html" with icon="users" %}<span class="nav-tip">Users</span></a>
+        {% endif %}
+        <a class="icon-btn" href="{% url 'user_settings' %}" aria-label="Settings">{% include "stockroom/partials/icon.html" with icon="settings" %}<span class="nav-tip">Settings</span></a>
+        <form method="post" action="{% url 'logout' %}">
+          {% csrf_token %}
+          <button type="submit" class="icon-btn" aria-label="Sign out">{% include "stockroom/partials/icon.html" with icon="sign-out" %}<span class="nav-tip">Sign out</span></button>
+        </form>
+      </div>
+    </div>
+  </header>
+  {% endblock %}
+  <main class="page">
+    {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+          <li class="message {{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+  <script src="{% static 'stockroom/js/validation.js' %}?v=4"></script>
+</body>
+</html>

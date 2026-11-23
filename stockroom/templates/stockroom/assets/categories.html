@@ -1,0 +1,38 @@
+{% extends "stockroom/base.html" %}
+{% block title %}Categories{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div>
+    <p class="eyebrow">Stock</p>
+    <h1>Categories</h1>
+    <p class="lede">These names are the choices when an asset or a consumable is received or edited.</p>
+  </div>
+  <a class="btn btn-primary" href="{% url 'asset_category_create' %}">Add category</a>
+</header>
+{% if categories %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th><th>Assets</th><th>Consumables</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for category in categories %}
+          <tr>
+            <td data-label="Name"><a href="{% url 'asset_category_edit' category.pk %}">{{ category.name }}</a></td>
+            <td data-label="Assets">{{ category.asset_count }}</td>
+            <td data-label="Consumables">{{ category.consumable_count }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <section class="panel empty-panel">
+    <h2>No categories yet</h2>
+    <p>Add a category before receiving stock.</p>
+  </section>
+{% endif %}
+<p><a href="{% url 'asset_list' %}">Back to assets</a></p>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "stockroom/base.html" %}
+{% block title %}Consumable stocktake{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div>
+    <p class="eyebrow">Stocktake</p>
+    <h1>Count consumables</h1>
+    <p class="lede">Scan a barcode to open that item, or choose one from the list. Saving a count replaces the on-hand quantity and writes a usage record.</p>
+  </div>
+</header>
+<form class="search" method="get">
+  <label class="sr-only" for="q">Find a consumable</label>
+  <input id="q" name="q" class="input barcode-input" value="{{ query }}" placeholder="Scan a barcode or search" autocomplete="off" data-scan-mode="submit" autofocus>
+  <button class="btn btn-primary" type="submit">Find</button>
+</form>
+{% if page_obj.paginator.count %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Barcode</th><th>Name</th><th>On hand</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for item in page_obj %}
+          <tr>
+            <td data-label="Barcode" class="mono">{{ item.barcode }}</td>
+            <td data-label="Name">{{ item.name }}</td>
+            <td data-label="On hand">{{ item.quantity_on_hand }} {{ item.unit }}</td>
+            <td data-label="Count"><a class="btn btn-ghost" href="{% url 'consumable_detail' item.barcode %}">Count</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "stockroom/partials/pager.html" %}
+{% else %}
+  <section class="panel empty-panel">
+    <h2>No consumables to count</h2>
+  </section>
+{% endif %}
+{% endblock %}

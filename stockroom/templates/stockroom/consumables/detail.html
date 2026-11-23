@@ -1,0 +1,64 @@
+{% extends "stockroom/base.html" %}
+{% block title %}{{ item.name }}{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div>
+    <p class="eyebrow mono">{{ item.barcode }}</p>
+    <h1>{{ item.name }}</h1>
+    <p class="lede">{{ item.quantity_on_hand }} {{ item.unit }} on hand{% if item.needs_reorder %} · <span class="pill pill-warn">Reorder</span>{% endif %}{% if item.over_max_hold %} · <span class="pill pill-over">{{ item.over_by }} over max</span>{% endif %}</p>
+  </div>
+  <div class="page-actions">
+    <a class="btn btn-ghost" href="{% url 'consumable_label' item.barcode %}">Label</a>
+    {% if is_store_admin %}
+      <a class="btn btn-ghost" href="{% url 'consumable_edit' item.barcode %}">Edit</a>
+    {% endif %}
+  </div>
+</header>
+<section class="split">
+  <div class="panel">
+    <h2>Record</h2>
+    <dl class="facts">
+      <div><dt>Category</dt><dd>{{ item.category }}</dd></div>
+      <div><dt>Attributes</dt><dd>{% include "stockroom/partials/attributes.html" with attributes=item.attribute_list %}</dd></div>
+      <div><dt>Unit</dt><dd>{{ item.unit }}</dd></div>
+      <div><dt>Reorder level</dt><dd>{{ item.reorder_level }}</dd></div>
+      <div><dt>Reorder quantity</dt><dd>{{ item.reorder_quantity }}</dd></div>
+      <div><dt>Max qty to hold</dt><dd>{% if item.max_qty_to_hold %}{{ item.max_qty_to_hold }} {{ item.unit }}{% else %}No maximum{% endif %}</dd></div>
+      <div><dt>Bin location</dt><dd>{{ item.location|default:"—" }}</dd></div>
+      <div><dt>Supplier</dt><dd>{{ item.supplier|default:"—" }}</dd></div>
+      <div><dt>Updated</dt><dd>{{ item.updated_at|date:"j M Y, H:i" }}</dd></div>
+    </dl>
+    {% if item.notes %}<p>{{ item.notes }}</p>{% endif %}
+  </div>
+  <div class="stack">
+    <form class="panel" method="post" action="{% url 'consumable_receive' item.barcode %}" data-validate data-confirm="Receive more {{ item.name }} into the store?">
+      {% csrf_token %}
+      <h2>Goods in</h2>
+      {% include "stockroom/partials/field.html" with field=receipt_form.quantity %}
+      {% include "stockroom/partials/field.html" with field=receipt_form.notes %}
+      <button class="btn btn-primary" type="submit">Receive</button>
+    </form>
+    <form class="panel" method="post" action="{% url 'consumable_issue' item.barcode %}" data-validate data-confirm="Issue {{ item.name }} out of the store?">
+      {% csrf_token %}
+      <h2>Goods out</h2>
+      {% include "stockroom/partials/field.html" with field=issue_form.quantity %}
+      {% include "stockroom/partials/field.html" with field=issue_form.issued_to %}
+      {% include "stockroom/partials/field.html" with field=issue_form.notes %}
+      <button class="btn btn-primary" type="submit">Issue</button>
+    </form>
+    <form class="panel" method="post" action="{% url 'consumable_count' item.barcode %}" data-validate data-confirm="Replace the on-hand quantity for {{ item.name }} with this count?">
+      {% csrf_token %}
+      <h2>Stocktake</h2>
+      {% include "stockroom/partials/field.html" with field=count_form.counted %}
+      {% include "stockroom/partials/field.html" with field=count_form.notes %}
+      <button class="btn btn-ghost" type="submit">Save count</button>
+    </form>
+    {% if is_store_admin %}
+      <form method="post" action="{% url 'consumable_delete' item.barcode %}" data-confirm="Delete {{ item.name }}? This cannot be undone.">
+        {% csrf_token %}
+        <button class="btn btn-danger" type="submit">Delete consumable</button>
+      </form>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

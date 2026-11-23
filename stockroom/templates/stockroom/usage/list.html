@@ -1,0 +1,56 @@
+{% extends "stockroom/base.html" %}
+{% block title %}Usage{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div>
+    <p class="eyebrow">Usage</p>
+    <h1>Consumable log</h1>
+  </div>
+</header>
+<form class="search" method="get">
+  <label class="sr-only" for="q">Search usage</label>
+  <input id="q" name="q" class="input" value="{{ query }}" placeholder="Item, barcode or issued to">
+  <label class="sr-only" for="movement">Movement</label>
+  <select id="movement" name="movement" class="input">
+    <option value="">All movements</option>
+    {% for value, label in movements %}
+      <option value="{{ value }}" {% if movement == value %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+  <button class="btn btn-primary" type="submit">Filter</button>
+</form>
+{% if page_obj.paginator.count %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>When</th><th>Movement</th><th>Item</th><th>Quantity</th><th>Before</th><th>After</th><th>Issued to</th><th>By</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in page_obj %}
+          <tr>
+            <td data-label="When">{{ row.recorded_at|date:"j M Y, H:i" }}</td>
+            <td data-label="Movement">{{ row.get_movement_display }}</td>
+            <td data-label="Item">
+              {% if is_operational %}
+                <a href="{% url 'consumable_detail' row.consumable.barcode %}">{{ row.consumable.name }}</a>
+              {% else %}
+                {{ row.consumable.name }}
+              {% endif %}
+            </td>
+            <td data-label="Quantity">{{ row.quantity }}</td>
+            <td data-label="Before">{{ row.quantity_before }}</td>
+            <td data-label="After">{{ row.quantity_after }}</td>
+            <td data-label="Issued to">{{ row.issued_to|default:"—" }}</td>
+            <td data-label="By">{{ row.recorded_by|default:"—" }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "stockroom/partials/pager.html" %}
+{% else %}
+  <section class="panel empty-panel"><h2>No usage recorded</h2></section>
+{% endif %}
+{% endblock %}

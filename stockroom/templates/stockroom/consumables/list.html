@@ -1,0 +1,62 @@
+{% extends "stockroom/base.html" %}
+{% block title %}Consumables{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div>
+    <p class="eyebrow">Consumables</p>
+    <h1>Consumable stock</h1>
+  </div>
+  <div class="page-actions">
+    {% if is_store_admin %}
+      <a class="btn btn-ghost" href="{% url 'asset_category_list' %}">Categories</a>
+      <a class="btn btn-ghost" href="{% url 'bin_location_list' %}">Bin locations</a>
+    {% endif %}
+    <a class="btn btn-primary" href="{% url 'goods_in_consumable' %}">Goods in</a>
+  </div>
+</header>
+<form class="search" method="get">
+  <label class="sr-only" for="q">Search consumables</label>
+  <input id="q" name="q" class="input barcode-input" value="{{ query }}" placeholder="Scan a barcode or search" autocomplete="off" autocapitalize="off" spellcheck="false" data-scan-mode="submit" autofocus>
+  {% if low_only %}<input type="hidden" name="low" value="1">{% endif %}
+  {% if over_only %}<input type="hidden" name="over" value="1">{% endif %}
+  <button class="btn btn-primary" type="submit">Search</button>
+</form>
+<div class="filters">
+  <a href="{% url 'consumable_list' %}" {% if not low_only and not over_only %}aria-current="true"{% endif %}>All</a>
+  <a href="?low=1{% if query %}&amp;q={{ query|urlencode }}{% endif %}" {% if low_only %}aria-current="true"{% endif %}>Needs reorder</a>
+  <a href="?over=1{% if query %}&amp;q={{ query|urlencode }}{% endif %}" {% if over_only %}aria-current="true"{% endif %}>Over max hold</a>
+</div>
+{% if page_obj.paginator.count %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Barcode</th><th>Name</th><th>On hand</th><th>Reorder at</th><th>Max qty to hold</th><th>Bin location</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in page_obj %}
+          <tr>
+            <td data-label="Barcode"><a class="mono" href="{% url 'consumable_detail' item.barcode %}">{{ item.barcode }}</a></td>
+            <td data-label="Name">{{ item.name }}</td>
+            <td data-label="On hand">
+              {{ item.quantity_on_hand }} {{ item.unit }}
+              {% if item.needs_reorder %}<span class="pill pill-warn">Reorder</span>{% endif %}
+              {% if item.over_max_hold %}<span class="pill pill-over">Over max</span>{% endif %}
+            </td>
+            <td data-label="Reorder at">{{ item.reorder_level }}</td>
+            <td data-label="Max qty to hold">{% if item.max_qty_to_hold %}{{ item.max_qty_to_hold }}{% else %}—{% endif %}</td>
+            <td data-label="Bin location">{{ item.location|default:"—" }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "stockroom/partials/pager.html" %}
+{% else %}
+  <section class="panel empty-panel">
+    <h2>No consumables match</h2>
+    <p>Receive a consumable to start the usage log.</p>
+  </section>
+{% endif %}
+{% endblock %}

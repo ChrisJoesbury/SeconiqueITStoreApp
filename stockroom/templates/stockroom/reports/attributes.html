@@ -1,0 +1,77 @@
+{% extends "stockroom/base.html" %}
+{% block title %}Attributes{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div>
+    <p class="eyebrow">Report</p>
+    <h1>Attributes</h1>
+    <p class="lede">Each attribute is counted across assets and consumables. The same word with different capital letters is treated as one attribute.</p>
+  </div>
+</header>
+<form class="search" method="get">
+  <label class="sr-only" for="q">Search attributes</label>
+  <input id="q" name="q" class="input" value="{{ query }}" placeholder="Search attributes" autofocus>
+  {% if attribute %}<input type="hidden" name="attribute" value="{{ attribute }}">{% endif %}
+  <button class="btn btn-primary" type="submit">Search</button>
+</form>
+{% if summary %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Attribute</th><th>Assets</th><th>Consumables</th><th>Total</th></tr>
+      </thead>
+      <tbody>
+        {% for row in summary %}
+          <tr>
+            <td data-label="Attribute">
+              <a href="?attribute={{ row.name|urlencode }}{% if query %}&amp;q={{ query|urlencode }}{% endif %}" {% if selected == row.name %}aria-current="page"{% endif %}>{{ row.name }}</a>
+            </td>
+            <td data-label="Assets">{{ row.asset_count }}</td>
+            <td data-label="Consumables">{{ row.consumable_count }}</td>
+            <td data-label="Total">{{ row.total }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <section class="panel empty-panel">
+    <h2>No attributes recorded</h2>
+    <p>Add comma-separated attributes when receiving or editing an asset or a consumable.</p>
+  </section>
+{% endif %}
+<section class="panel">
+  <h2>{% if selected %}Items with {{ selected }}{% else %}Items with attributes{% endif %}</h2>
+  {% if selected %}
+    <p class="help"><a href="{% url 'attribute_report' %}{% if query %}?q={{ query|urlencode }}{% endif %}">Show every attribute</a></p>
+  {% endif %}
+  {% if page_obj.paginator.count %}
+    <table>
+      <thead>
+        <tr><th>Type</th><th>Barcode</th><th>Name</th><th>Category</th><th>Attributes</th><th>Holding</th></tr>
+      </thead>
+      <tbody>
+        {% for row in page_obj %}
+          <tr>
+            <td data-label="Type"><span class="pill pill-{{ row.kind }}">{{ row.kind_label }}</span></td>
+            <td data-label="Barcode">
+              {% if is_operational %}
+                <a class="mono" href="{% if row.kind == 'asset' %}{% url 'asset_detail' row.barcode %}{% else %}{% url 'consumable_detail' row.barcode %}{% endif %}">{{ row.barcode }}</a>
+              {% else %}
+                <span class="mono">{{ row.barcode }}</span>
+              {% endif %}
+            </td>
+            <td data-label="Name">{{ row.name }}</td>
+            <td data-label="Category">{{ row.category }}</td>
+            <td data-label="Attributes">{% include "stockroom/partials/attributes.html" with attributes=row.attributes %}</td>
+            <td data-label="Holding">{{ row.holding }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% include "stockroom/partials/pager.html" %}
+  {% else %}
+    <p class="muted">No items use this attribute.</p>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends "stockroom/base.html" %}
+{% block title %}Receive consumable{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div>
+    <p class="eyebrow">Goods in</p>
+    <h1>Receive a consumable</h1>
+    {% if not item %}<p class="lede">Scan the barcode, search the list by name, or start a new consumable and print its barcode label first.</p>{% endif %}
+  </div>
+  {% if not item %}
+    <div class="page-actions">
+      <a class="btn btn-primary" href="{% url 'consumable_create' %}">New consumable</a>
+    </div>
+  {% endif %}
+</header>
+{% if item %}
+  <form class="panel form-card" method="post" data-validate data-confirm="Receive more {{ item.name }} into the store?">
+    {% csrf_token %}
+    <input type="hidden" name="step" value="confirm">
+    <input type="hidden" name="barcode" value="{{ item.barcode }}">
+    <p class="lede"><span class="mono">{{ item.barcode }}</span> · {{ item.name }} · {{ item.quantity_on_hand }} {{ item.unit }} on hand</p>
+    {% include "stockroom/partials/field.html" with field=receipt_form.quantity %}
+    {% include "stockroom/partials/field.html" with field=receipt_form.notes %}
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit">Confirm receipt</button>
+      <a class="btn btn-ghost" href="{% url 'goods_in_consumable' %}">Scan a different item</a>
+    </div>
+  </form>
+{% else %}
+  <form class="panel form-card" method="post" data-validate>
+    {% csrf_token %}
+    <input type="hidden" name="step" value="find">
+    {% include "stockroom/partials/field.html" with field=form.barcode %}
+    <button class="btn btn-primary" type="submit">Find consumable</button>
+  </form>
+  <h2>In the store</h2>
+  {% include "stockroom/partials/name_search.html" %}
+  {% if page_obj.paginator.count %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th><th>Barcode</th><th>On hand</th><th>Bin location</th><th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in page_obj %}
+            <tr>
+              <td data-label="Name">{{ row.name }}</td>
+              <td data-label="Barcode" class="mono">{{ row.barcode }}</td>
+              <td data-label="On hand">{{ row.quantity_on_hand }} {{ row.unit }}</td>
+              <td data-label="Bin location">{{ row.location|default:"—" }}</td>
+              <td data-label=""><a href="?barcode={{ row.barcode|urlencode }}">Receive</a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% include "stockroom/partials/pager.html" %}
+  {% else %}
+    <section class="panel empty-panel">
+      <h2>No consumables match</h2>
+      <p>Try another name, or start a new consumable.</p>
+    </section>
+  {% endif %}
+{% endif %}
+{% endblock %}

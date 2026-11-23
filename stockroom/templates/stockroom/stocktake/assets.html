@@ -1,0 +1,65 @@
+{% extends "stockroom/base.html" %}
+{% block title %}Asset stocktake{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div>
+    <p class="eyebrow">Stocktake</p>
+    <h1>Count assets</h1>
+    <p class="lede">Scanned {{ scanned_count }} of {{ expected_count }} in stock. Issued, in repair and retired assets are not part of this count.</p>
+  </div>
+  <form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="step" value="cancel">
+    <button class="btn btn-ghost" type="submit">Cancel count</button>
+  </form>
+</header>
+<form class="search" method="post" data-validate>
+  {% csrf_token %}
+  <input type="hidden" name="step" value="scan">
+  <label class="sr-only" for="{{ form.barcode.id_for_label }}">Barcode</label>
+  {{ form.barcode }}
+  <button class="btn btn-primary" type="submit">Scan</button>
+</form>
+<p class="field-error" id="{{ form.barcode.id_for_label }}-error" role="alert">{% for error in form.barcode.errors %}{{ error }}{% if not forloop.last %} {% endif %}{% endfor %}</p>
+{% if expected_count %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Barcode</th><th>Name</th><th>Bin location</th><th>Count</th></tr>
+      </thead>
+      <tbody>
+        {% for asset in page_obj %}
+          <tr>
+            <td data-label="Barcode" class="mono">{{ asset.barcode }}</td>
+            <td data-label="Name">{{ asset.name }}</td>
+            <td data-label="Bin location">{{ asset.location|default:"—" }}</td>
+            <td data-label="Count">
+              {% if asset.barcode in scanned %}
+                <form method="post">
+                  {% csrf_token %}
+                  <input type="hidden" name="step" value="remove">
+                  <input type="hidden" name="barcode" value="{{ asset.barcode }}">
+                  <button class="btn btn-ghost" type="submit">Scanned · undo</button>
+                </form>
+              {% else %}
+                <span class="pill">Not scanned</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "stockroom/partials/pager.html" %}
+  <form method="post" data-confirm="Complete the stocktake? In-stock assets that were not scanned will be marked missing.">
+    {% csrf_token %}
+    <input type="hidden" name="step" value="complete">
+    <button class="btn btn-primary" type="submit">Complete stocktake</button>
+  </form>
+{% else %}
+  <section class="panel empty-panel">
+    <h2>Nothing in stock to count</h2>
+    <p>Receive assets first, or return issued assets to the store.</p>
+  </section>
+{% endif %}
+{% endblock %}

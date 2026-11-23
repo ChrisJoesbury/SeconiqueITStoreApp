@@ -1,0 +1,157 @@
+{% extends "stockroom/base.html" %}
+{% block title %}Analytics{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div>
+    <p class="eyebrow">Reporting</p>
+    <h1>Store analytics</h1>
+    <p class="lede">Replacement dates, missing assets, max quantities to hold, and consumable usage for purchasing.</p>
+  </div>
+</header>
+<section class="stats">
+  {% for row in status_counts %}
+    <div class="stat">
+      <span>{{ row.label }}</span>
+      <strong>{{ row.total }}</strong>
+    </div>
+  {% endfor %}
+</section>
+<section class="stats">
+  <div class="stat {% if over_asset_count %}stat-bad{% endif %}">
+    <span>Asset types over max hold</span>
+    <strong>{{ over_asset_count }}</strong>
+  </div>
+  <div class="stat {% if over_consumable_count %}stat-bad{% endif %}">
+    <span>Consumables over max hold</span>
+    <strong>{{ over_consumable_count }}</strong>
+  </div>
+</section>
+<div class="split">
+  <section class="panel">
+    <h2>End of life within {{ eol_days }} days</h2>
+    {% if eol_assets %}
+      <table>
+        <thead><tr><th>Asset</th><th>Status</th><th>End of life</th></tr></thead>
+        <tbody>
+          {% for asset in eol_assets %}
+            <tr>
+              <td data-label="Asset">{{ asset.name }} <span class="mono">{{ asset.barcode }}</span></td>
+              <td data-label="Status">{{ asset.get_status_display }}</td>
+              <td data-label="End of life">{{ asset.eol_date|date:"j M Y" }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="muted">No active assets fall inside this window.</p>
+    {% endif %}
+  </section>
+  <section class="panel">
+    <h2>Missing from the last asset count</h2>
+    {% if missing_assets %}
+      <table>
+        <thead><tr><th>Asset</th><th>Bin location</th><th>Counted</th></tr></thead>
+        <tbody>
+          {% for asset in missing_assets %}
+            <tr>
+              <td data-label="Asset">{{ asset.name }} <span class="mono">{{ asset.barcode }}</span></td>
+              <td data-label="Bin location">{{ asset.location|default:"—" }}</td>
+              <td data-label="Counted">{{ asset.last_stocktake_at|date:"j M Y" }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="muted">No in-stock assets are marked missing.</p>
+    {% endif %}
+  </section>
+</div>
+<section class="panel">
+  <h2>Consumables at or below reorder level</h2>
+  {% if low_stock %}
+    <table>
+      <thead><tr><th>Item</th><th>On hand</th><th>Reorder at</th><th>Max qty to hold</th><th>Suggested order</th></tr></thead>
+      <tbody>
+        {% for item in low_stock %}
+          <tr>
+            <td data-label="Item">{{ item.name }} <span class="mono">{{ item.barcode }}</span></td>
+            <td data-label="On hand">{{ item.quantity_on_hand }} {{ item.unit }}</td>
+            <td data-label="Reorder at">{{ item.reorder_level }}</td>
+            <td data-label="Max qty to hold">{% if item.max_qty_to_hold %}{{ item.max_qty_to_hold }}{% else %}—{% endif %}</td>
+            <td data-label="Suggested order">
+              {{ item.suggested_order }} {{ item.unit }}
+              {% if item.order_was_capped %}<span class="muted">capped at the max qty to hold</span>{% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="muted">No consumables need reordering.</p>
+  {% endif %}
+</section>
+<section class="panel">
+  <h2>Consumables above max qty to hold</h2>
+  {% if over_max_consumables %}
+    <table>
+      <thead><tr><th>Item</th><th>On hand</th><th>Max qty to hold</th><th>Over by</th></tr></thead>
+      <tbody>
+        {% for item in over_max_consumables %}
+          <tr>
+            <td data-label="Item">{{ item.name }} <span class="mono">{{ item.barcode }}</span></td>
+            <td data-label="On hand">{{ item.quantity_on_hand }} {{ item.unit }}</td>
+            <td data-label="Max qty to hold">{{ item.max_qty_to_hold }}</td>
+            <td data-label="Over by"><span class="pill pill-over">{{ item.over_by }} {{ item.unit }}</span></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="muted">No consumables are above their max qty to hold.</p>
+  {% endif %}
+</section>
+<section class="panel">
+  <h2>Assets against max qty to hold</h2>
+  <p class="help">Assets with the same name and category are counted together. The max is the highest value set on assets that are not retired. In stock and in repair count as held. Issued assets are shown separately.</p>
+  {% if asset_holding %}
+    <table>
+      <thead><tr><th>Asset</th><th>Category</th><th>Held in store</th><th>Issued</th><th>Max qty to hold</th><th>Position</th></tr></thead>
+      <tbody>
+        {% for row in asset_holding %}
+          <tr>
+            <td data-label="Asset">{{ row.name }}</td>
+            <td data-label="Category">{{ row.category }}</td>
+            <td data-label="Held in store">{{ row.held }}</td>
+            <td data-label="Issued">{{ row.issued }}</td>
+            <td data-label="Max qty to hold">{{ row.max_qty }}</td>
+            <td data-label="Position">
+              {% if row.over_max %}
+                <span class="pill pill-over">{{ row.over_by }} over</span>
+              {% else %}
+                {{ row.room }} free
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="muted">Set a max qty to hold on an asset to compare how many of that type are in the store.</p>
+  {% endif %}
+</section>
+<section class="panel">
+  <h2>Consumables issued</h2>
+  {% if usage_rows %}
+    <ul class="bars">
+      {% for row in usage_rows %}
+        <li>
+          <div class="bar-label"><span>{{ row.consumable__name }}</span><span>{{ row.total }} {{ row.consumable__unit }}</span></div>
+          <div class="bar-track"><span style="width: {{ row.width }}%"></span></div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="muted">Issues appear here once consumables are booked out.</p>
+  {% endif %}
+</section>
+{% endblock %}

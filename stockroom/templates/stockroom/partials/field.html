@@ -1,0 +1,16 @@
+<div class="field{% if field.errors %} is-invalid{% endif %}">
+  {% if field.widget_type == "checkbox" %}
+    <div class="check">
+      {{ field }}
+      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+    </div>
+  {% else %}
+    <label for="{{ field.id_for_label }}">
+      {{ field.label }}
+      <span class="req"{% if not field.field.required %} hidden{% endif %}>Required</span>
+    </label>
+    {{ field }}
+  {% endif %}
+  <p class="field-error" id="{{ field.id_for_label }}-error" role="alert">{% for error in field.errors %}{{ error }}{% if not forloop.last %} {% endif %}{% endfor %}</p>
+  {% if field.help_text %}<p class="help">{{ field.help_text }}</p>{% endif %}
+</div>

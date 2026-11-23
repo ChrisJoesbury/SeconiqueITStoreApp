@@ -1,0 +1,16 @@
+{% extends "stockroom/base.html" %}
+{% block title %}Label {{ barcode }}{% endblock %}
+{% block body_class %}label-page{% endblock %}
+{% block content %}
+<header class="page-head no-print">
+  <div>
+    <p class="eyebrow">{{ heading }}</p>
+    <h1>Fix this label to the item</h1>
+  </div>
+  <div class="page-actions">
+    <button class="btn btn-primary" type="button" onclick="window.print()">Print label</button>
+    <a class="btn btn-ghost" href="{% url back_url_name barcode %}">Back to record</a>
+  </div>
+</header>
+{% include "stockroom/partials/label_sheet.html" with barcode=barcode barcode_svg=barcode_svg description=description %}
+{% endblock %}

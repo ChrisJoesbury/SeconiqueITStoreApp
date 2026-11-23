@@ -1,0 +1,68 @@
+{% extends "stockroom/base.html" %}
+{% block title %}Store list{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div>
+    <p class="eyebrow">Report</p>
+    <h1>What is in the store</h1>
+    <p class="lede">Assets on the shelf and consumables with a quantity on hand. Issued, in repair and retired assets are left out.</p>
+  </div>
+</header>
+<form class="search" method="get">
+  <label class="sr-only" for="q">Search the store list</label>
+  <input id="q" name="q" class="input barcode-input" value="{{ query }}" placeholder="Scan a barcode or search" autocomplete="off" autocapitalize="off" spellcheck="false" data-scan-mode="submit" autofocus>
+  {% if kind %}<input type="hidden" name="kind" value="{{ kind }}">{% endif %}
+  <button class="btn btn-primary" type="submit">Search</button>
+</form>
+<div class="filters">
+  <a href="{% url 'store_contents' %}{% if query %}?q={{ query|urlencode }}{% endif %}" {% if not kind %}aria-current="true"{% endif %}>All</a>
+  <a href="?kind=asset{% if query %}&amp;q={{ query|urlencode }}{% endif %}" {% if kind == "asset" %}aria-current="true"{% endif %}>Assets</a>
+  <a href="?kind=consumable{% if query %}&amp;q={{ query|urlencode }}{% endif %}" {% if kind == "consumable" %}aria-current="true"{% endif %}>Consumables</a>
+</div>
+<section class="stats">
+  <div class="stat">
+    <span>Assets in the store</span>
+    <strong>{{ asset_count }}</strong>
+  </div>
+  <div class="stat">
+    <span>Consumables in the store</span>
+    <strong>{{ consumable_count }}</strong>
+  </div>
+</section>
+{% if page_obj.paginator.count %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th><th>Barcode</th><th>Name</th><th>Category</th><th>Attributes</th><th>Quantity</th><th>Bin location</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in page_obj %}
+          <tr>
+            <td data-label="Type"><span class="pill pill-{{ row.kind }}">{{ row.kind_label }}</span></td>
+            <td data-label="Barcode">
+              {% if is_operational %}
+                <a class="mono" href="{% if row.kind == 'asset' %}{% url 'asset_detail' row.barcode %}{% else %}{% url 'consumable_detail' row.barcode %}{% endif %}">{{ row.barcode }}</a>
+              {% else %}
+                <span class="mono">{{ row.barcode }}</span>
+              {% endif %}
+            </td>
+            <td data-label="Name">{{ row.name }}</td>
+            <td data-label="Category">{{ row.category }}</td>
+            <td data-label="Attributes">{% include "stockroom/partials/attributes.html" with attributes=row.attributes %}</td>
+            <td data-label="Quantity">{{ row.quantity }}</td>
+            <td data-label="Bin location">{{ row.location|default:"—" }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "stockroom/partials/pager.html" %}
+{% else %}
+  <section class="panel empty-panel">
+    <h2>Nothing in the store matches</h2>
+    <p>Receive an asset or a consumable, or clear the search.</p>
+  </section>
+{% endif %}
+{% endblock %}

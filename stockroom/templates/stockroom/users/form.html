@@ -1,0 +1,22 @@
+{% extends "stockroom/base.html" %}
+{% block title %}{% if mode == "edit" %}Edit user{% else %}Add user{% endif %}{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div>
+    <p class="eyebrow">Users</p>
+    <h1>{% if mode == "edit" %}Edit {{ account.username }}{% else %}Add a user{% endif %}</h1>
+    <p class="lede">Standard users move stock. Admin users can also edit records, see analytics and manage users. Reporting users only see analytics and the usage log. Assignees are people equipment is issued to, and they cannot sign in.</p>
+  </div>
+</header>
+<form class="panel form-card" method="post" data-validate data-confirm="{% if mode == 'edit' %}Save changes to this user?{% else %}Add this user?{% endif %}">
+  {% csrf_token %}
+  {% if form.non_field_errors %}<div class="banner banner-error">{{ form.non_field_errors }}</div>{% endif %}
+  {% for field in form %}
+    {% include "stockroom/partials/field.html" with field=field %}
+  {% endfor %}
+  <div class="form-actions">
+    <button class="btn btn-primary" type="submit">{% if mode == "edit" %}Save changes{% else %}Add user{% endif %}</button>
+    <a class="btn btn-ghost" href="{% url 'user_list' %}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

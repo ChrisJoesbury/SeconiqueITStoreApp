@@ -1,0 +1,52 @@
+{% extends "stockroom/base.html" %}
+{% block title %}Users{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div>
+    <p class="eyebrow">Users</p>
+    <h1>Store accounts</h1>
+  </div>
+  <a class="btn btn-primary" href="{% url 'user_create' %}">Add user</a>
+</header>
+<form class="search" method="get">
+  <label class="sr-only" for="q">Search users</label>
+  <input id="q" name="q" class="input" value="{{ query }}" placeholder="Search by name, username or email" autocomplete="off" autofocus>
+  {% if role %}<input type="hidden" name="role" value="{{ role }}">{% endif %}
+  <button class="btn btn-primary" type="submit">Search</button>
+</form>
+<div class="filters">
+  <a href="{% url 'user_list' %}{% if query %}?q={{ query|urlencode }}{% endif %}" {% if not role %}aria-current="true"{% endif %}>All</a>
+  {% for name in roles %}
+    <a href="?role={{ name|urlencode }}{% if query %}&amp;q={{ query|urlencode }}{% endif %}" {% if role == name %}aria-current="true"{% endif %}>{{ name }}</a>
+  {% endfor %}
+</div>
+{% if page_obj.paginator.count %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Username</th><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Last sign-in</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for account in page_obj %}
+          <tr>
+            <td data-label="Username"><a class="mono" href="{% url 'user_edit' account.pk %}">{{ account.username }}</a>{% if account.pk == request.user.pk %} <span class="pill">You</span>{% endif %}</td>
+            <td data-label="Name">{{ account.get_full_name|default:"—" }}</td>
+            <td data-label="Email">{{ account.email|default:"—" }}</td>
+            <td data-label="Role">{{ account.store_role_label }}</td>
+            <td data-label="Status">{% if account.is_active %}<span class="pill pill-found">Active</span>{% else %}<span class="pill pill-retired">Inactive</span>{% endif %}</td>
+            <td data-label="Last sign-in">{% if account.last_login %}{{ account.last_login|date:"j M Y, H:i" }}{% else %}—{% endif %}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "stockroom/partials/pager.html" %}
+{% else %}
+  <section class="panel empty-panel">
+    <h2>No users match</h2>
+    <p>Try another name, or add a user for the store.</p>
+  </section>
+{% endif %}
+{% endblock %}

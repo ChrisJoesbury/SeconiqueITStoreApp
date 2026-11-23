@@ -1,0 +1,38 @@
+{% extends "stockroom/base.html" %}
+{% block title %}Bin locations{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div>
+    <p class="eyebrow">Stock</p>
+    <h1>Bin locations</h1>
+    <p class="lede">These names are the choices when an asset or a consumable is received or edited.</p>
+  </div>
+  <a class="btn btn-primary" href="{% url 'bin_location_create' %}">Add bin location</a>
+</header>
+{% if locations %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th><th>Assets</th><th>Consumables</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for location in locations %}
+          <tr>
+            <td data-label="Name"><a href="{% url 'bin_location_edit' location.pk %}">{{ location.name }}</a></td>
+            <td data-label="Assets">{{ location.asset_count }}</td>
+            <td data-label="Consumables">{{ location.consumable_count }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <section class="panel empty-panel">
+    <h2>No bin locations yet</h2>
+    <p>Add a bin location before receiving stock.</p>
+  </section>
+{% endif %}
+<p><a href="{% url 'asset_list' %}">Back to assets</a></p>
+{% endblock %}

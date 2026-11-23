@@ -1,0 +1,78 @@
+{% extends "stockroom/base.html" %}
+{% block title %}{{ asset.name }}{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div>
+    <p class="eyebrow mono">{{ asset.barcode }}</p>
+    <h1>{{ asset.name }}</h1>
+    <p class="lede"><span class="pill pill-{{ asset.status }}">{{ asset.get_status_display }}</span></p>
+  </div>
+  <div class="page-actions">
+    <a class="btn btn-ghost" href="{% url 'asset_label' asset.barcode %}">Label</a>
+    {% if is_store_admin %}
+      <a class="btn btn-ghost" href="{% url 'asset_edit' asset.barcode %}">Edit</a>
+    {% endif %}
+  </div>
+</header>
+<section class="split">
+  <div class="panel">
+    <h2>Record</h2>
+    <dl class="facts">
+      <div><dt>Category</dt><dd>{{ asset.category }}</dd></div>
+      <div><dt>Attributes</dt><dd>{% include "stockroom/partials/attributes.html" with attributes=asset.attribute_list %}</dd></div>
+      <div><dt>Manufacturer</dt><dd>{{ asset.manufacturer|default:"—" }}</dd></div>
+      <div><dt>Model</dt><dd>{{ asset.model_name|default:"—" }}</dd></div>
+      <div><dt>Serial number</dt><dd>{{ asset.serial_number|default:"—" }}</dd></div>
+      <div><dt>Order date</dt><dd>{{ asset.order_date|date:"j M Y" }}</dd></div>
+      <div><dt>End of life</dt><dd>{{ asset.eol_date|date:"j M Y" }}</dd></div>
+      <div><dt>Bin location</dt><dd>{{ asset.location|default:"—" }}</dd></div>
+      <div><dt>Max qty to hold</dt><dd>{% if asset.max_qty_to_hold %}{{ asset.max_qty_to_hold }}{% else %}No maximum{% endif %}</dd></div>
+      {% if holding %}
+        <div>
+          <dt>Held against max</dt>
+          <dd>
+            {{ holding.held }} in store
+            {% if holding.over_max %}
+              · <span class="pill pill-over">{{ holding.over_by }} over</span>
+            {% else %}
+              · {{ holding.room }} free
+            {% endif %}
+            {% if holding.max_qty != asset.max_qty_to_hold %}
+              <span class="help">Analytics uses {{ holding.max_qty }}, the highest max qty to hold set on this asset type.</span>
+            {% endif %}
+          </dd>
+        </div>
+      {% endif %}
+      <div><dt>Supplier</dt><dd>{{ asset.supplier|default:"—" }}</dd></div>
+      <div><dt>Purchase order</dt><dd>{{ asset.purchase_order|default:"—" }}</dd></div>
+      <div><dt>Received</dt><dd>{{ asset.received_at|date:"j M Y, H:i" }}{% if asset.received_by %} by {{ asset.received_by.get_username }}{% endif %}</dd></div>
+      <div><dt>Issued to</dt><dd>{{ asset.issued_to|default:"—" }}{% if asset.issued_at %} · {{ asset.issued_at|date:"j M Y, H:i" }}{% endif %}</dd></div>
+      <div><dt>Last stocktake</dt><dd>{% if asset.last_stocktake_at %}{{ asset.get_stocktake_result_display }} · {{ asset.last_stocktake_at|date:"j M Y, H:i" }}{% else %}Not checked{% endif %}</dd></div>
+    </dl>
+    {% if asset.notes %}<p>{{ asset.notes }}</p>{% endif %}
+  </div>
+  <div class="stack">
+    {% if asset.status == "in_stock" %}
+      <form class="panel" method="post" action="{% url 'asset_issue' asset.barcode %}" data-validate data-confirm="Issue {{ asset.name }} out of the store?">
+        {% csrf_token %}
+        <h2>Goods out</h2>
+        {% include "stockroom/partials/field.html" with field=issue_form.issued_to %}
+        <button class="btn btn-primary" type="submit">Issue asset</button>
+      </form>
+    {% elif asset.status == "issued" %}
+      <form class="panel" method="post" action="{% url 'asset_return' asset.barcode %}" data-confirm="Return {{ asset.name }} to the IT store?">
+        {% csrf_token %}
+        <h2>Return to store</h2>
+        <p>This marks the asset as in stock and clears the person it was issued to.</p>
+        <button class="btn btn-primary" type="submit">Return to stock</button>
+      </form>
+    {% endif %}
+    {% if is_store_admin %}
+      <form method="post" action="{% url 'asset_delete' asset.barcode %}" data-confirm="Delete {{ asset.name }}? This cannot be undone.">
+        {% csrf_token %}
+        <button class="btn btn-danger" type="submit">Delete asset</button>
+      </form>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends "stockroom/base.html" %}
+{% block title %}Assets{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div>
+    <p class="eyebrow">Assets</p>
+    <h1>IT assets</h1>
+  </div>
+  <div class="page-actions">
+    {% if is_store_admin %}
+      <a class="btn btn-ghost" href="{% url 'asset_category_list' %}">Categories</a>
+      <a class="btn btn-ghost" href="{% url 'bin_location_list' %}">Bin locations</a>
+    {% endif %}
+    <a class="btn btn-primary" href="{% url 'asset_create' %}">Receive asset</a>
+  </div>
+</header>
+<form class="search" method="get">
+  <label class="sr-only" for="q">Search assets</label>
+  <input id="q" name="q" class="input barcode-input" value="{{ query }}" placeholder="Scan a barcode or search" autocomplete="off" autocapitalize="off" spellcheck="false" data-scan-mode="submit" autofocus>
+  {% if status %}<input type="hidden" name="status" value="{{ status }}">{% endif %}
+  <button class="btn btn-primary" type="submit">Search</button>
+</form>
+<div class="filters">
+  <a href="{% url 'asset_list' %}" {% if not status %}aria-current="true"{% endif %}>All</a>
+  {% for value, label in statuses %}
+    <a href="?status={{ value }}{% if query %}&amp;q={{ query|urlencode }}{% endif %}" {% if status == value %}aria-current="true"{% endif %}>{{ label }}</a>
+  {% endfor %}
+</div>
+{% if page_obj.paginator.count %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Barcode</th><th>Name</th><th>Category</th><th>Status</th><th>Bin location</th><th>Max qty to hold</th><th>End of life</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for asset in page_obj %}
+          <tr>
+            <td data-label="Barcode"><a class="mono" href="{% url 'asset_detail' asset.barcode %}">{{ asset.barcode }}</a></td>
+            <td data-label="Name">{{ asset.name }}</td>
+            <td data-label="Category">{{ asset.category }}</td>
+            <td data-label="Status"><span class="pill pill-{{ asset.status }}">{{ asset.get_status_display }}</span></td>
+            <td data-label="Bin location">{{ asset.location|default:"—" }}</td>
+            <td data-label="Max qty to hold">{% if asset.max_qty_to_hold %}{{ asset.max_qty_to_hold }}{% else %}—{% endif %}</td>
+            <td data-label="End of life">{{ asset.eol_date|date:"j M Y" }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "stockroom/partials/pager.html" %}
+{% else %}
+  <section class="panel empty-panel">
+    <h2>No assets match</h2>
+    <p>Try another barcode, or receive a new asset into the store.</p>
+  </section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,44 @@
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Python bytecode and tooling caches
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Django runtime files
+*.log
+local_settings.py
+media/
+staticfiles/
+
+# SQLite write-ahead files. The database itself is kept:
+# the assessment brief asks for db.sqlite3 in the repository.
+*.sqlite3-journal
+db.sqlite3-journal
+
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+
+# Operating system and editor files
+.DS_Store
+Thumbs.db
+Desktop.ini
+.idea/
+.vscode/
+*.swp
+*~
+
+# Cursor local project data
+.cursor/

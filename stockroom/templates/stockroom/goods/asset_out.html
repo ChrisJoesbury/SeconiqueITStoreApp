@@ -1,0 +1,62 @@
+{% extends "stockroom/base.html" %}
+{% block title %}Issue asset{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div>
+    <p class="eyebrow">Goods out</p>
+    <h1>Issue an asset</h1>
+    {% if not asset %}<p class="lede">Scan the barcode, or search the list by name and choose the asset.</p>{% endif %}
+  </div>
+</header>
+{% if asset %}
+  <form class="panel form-card" method="post" data-validate data-confirm="Issue {{ asset.name }} to this person?">
+    {% csrf_token %}
+    <input type="hidden" name="step" value="confirm">
+    <input type="hidden" name="barcode" value="{{ asset.barcode }}">
+    <p class="lede"><span class="mono">{{ asset.barcode }}</span> · {{ asset.name }}{% if asset.location %} · {{ asset.location }}{% endif %}</p>
+    {% include "stockroom/partials/field.html" with field=issue_form.issued_to %}
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit">Confirm issue</button>
+      <a class="btn btn-ghost" href="{% url 'goods_out_asset' %}">Scan a different asset</a>
+    </div>
+  </form>
+{% else %}
+  <form class="panel form-card" method="post" data-validate>
+    {% csrf_token %}
+    <input type="hidden" name="step" value="find">
+    {% include "stockroom/partials/field.html" with field=form.barcode %}
+    <button class="btn btn-primary" type="submit">Find asset</button>
+  </form>
+  {% if lookup_error %}<div class="banner banner-error">{{ lookup_error }}</div>{% endif %}
+  <h2>In stock</h2>
+  {% include "stockroom/partials/name_search.html" %}
+  {% if page_obj.paginator.count %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th><th>Barcode</th><th>Category</th><th>Bin location</th><th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in page_obj %}
+            <tr>
+              <td data-label="Name">{{ row.name }}</td>
+              <td data-label="Barcode" class="mono">{{ row.barcode }}</td>
+              <td data-label="Category">{{ row.category }}</td>
+              <td data-label="Bin location">{{ row.location|default:"—" }}</td>
+              <td data-label=""><a href="?barcode={{ row.barcode|urlencode }}">Issue</a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% include "stockroom/partials/pager.html" %}
+  {% else %}
+    <section class="panel empty-panel">
+      <h2>No assets match</h2>
+      <p>Try another name, or scan the barcode.</p>
+    </section>
+  {% endif %}
+{% endif %}
+{% endblock %}

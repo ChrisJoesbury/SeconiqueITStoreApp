@@ -1,0 +1,30 @@
+{% extends "stockroom/base.html" %}
+{% block title %}{% if mode == "edit" %}Edit bin location{% else %}Add bin location{% endif %}{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div>
+    <p class="eyebrow">Stock</p>
+    <h1>{% if mode == "edit" %}Edit {{ location.name }}{% else %}Add a bin location{% endif %}</h1>
+    {% if mode == "edit" %}
+      <p class="lede">Used by {{ asset_count }} asset{{ asset_count|pluralize }}, {{ consumable_count }} consumable{{ consumable_count|pluralize }} and {{ setting_count }} user setting{{ setting_count|pluralize }}. Renaming updates those records.</p>
+    {% endif %}
+  </div>
+</header>
+<form class="panel form-card" method="post" data-validate data-confirm="{% if mode == 'edit' %}Save this bin location?{% else %}Add this bin location?{% endif %}">
+  {% csrf_token %}
+  {% if form.non_field_errors %}<div class="banner banner-error">{{ form.non_field_errors }}</div>{% endif %}
+  {% for field in form %}
+    {% include "stockroom/partials/field.html" with field=field %}
+  {% endfor %}
+  <div class="form-actions">
+    <button class="btn btn-primary" type="submit">{% if mode == "edit" %}Save changes{% else %}Add bin location{% endif %}</button>
+    <a class="btn btn-ghost" href="{% url 'bin_location_list' %}">Cancel</a>
+  </div>
+</form>
+{% if mode == "edit" %}
+  <form method="post" action="{% url 'bin_location_delete' location.pk %}" data-confirm="Delete {{ location.name }}?">
+    {% csrf_token %}
+    <button class="btn btn-danger" type="submit">Delete bin location</button>
+  </form>
+{% endif %}
+{% endblock %}

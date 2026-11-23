@@ -1,0 +1,21 @@
+{% extends "stockroom/base.html" %}
+{% block title %}Goods in{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div>
+    <p class="eyebrow">Goods in</p>
+    <h1>Receive into the store</h1>
+    <p class="lede">New assets and consumables can have a barcode label printed before the rest of the receipt is completed.</p>
+  </div>
+</header>
+<div class="choices">
+  <a class="choice" href="{% url 'asset_create' %}">
+    <h2>Asset</h2>
+    <p>Laptops, monitors and other equipment. Generate the barcode label, then complete the receipt.</p>
+  </a>
+  <a class="choice" href="{% url 'goods_in_consumable' %}">
+    <h2>Consumable</h2>
+    <p>Cables, toner and other items held as a quantity. Scan an existing item, or start a new one with a barcode label.</p>
+  </a>
+</div>
+{% endblock %}
